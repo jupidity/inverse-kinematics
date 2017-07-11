@@ -1,18 +1,22 @@
-[image1]: ./originDiagram.png
-[image2]: ./angle.png
-[image3]: ./stack.png
+[image1]: ./photos/originDiagram.png
+[image2]: ./photos/angle.png
+[image3]: ./photos/stack.png
 
 
 # Udacity Pick and Place Project Writeup
 ---
 
 
-The udacity pick and place prject consists of controlling a robotic arm Gazebo simulation to pick up a spawned object and place it in a bin. Most of the robotics tasks are covered by the Github repo, the package comes with:
+The Amazon/Udacity pick and place challenge consists of controlling a robotic arm Gazebo simulation to pick up a spawned object and place it in a bin. The simulation environment is available at:
+
+https://github.com/udacity/RoboND-Kinematics-Project
+
+Most of the robotics tasks are covered by the Github repo, the package comes with:
 
 - a urdf file containing the description of the robotic arm.
-- a gazebo world file containing the description of a simulaterd environment with which to place the arm
-- a collection of launch files to lauch almost all ros nodes required for the project to function
-- shell script to start ros master, MoveIt trajectory planning nodes, joint controller nodes, Gazebo simulation, and Rviz ros visualizations
+- a gazebo world file containing the description of a simulated environment with which to place the arm
+- a collection of launch files to launch almost all ROS nodes required for the project to function
+- shell script to start ROS master, MoveIt trajectory planning nodes, joint controller nodes, Gazebo simulation, and Rviz ROS visualizations
 
 
 There are two main problems that this project requires us to solve in order for the Kuka arm to function autonomously.
@@ -62,7 +66,7 @@ The following diagram was provided by the Udacity team to give helpful suggestio
 
 Using the above diagram and the urdf file, the DH parameter table can be filled in. In order to be verbose about my thought process, I'll outline one such parameter assignment process for the 1st joint.  
 
-- `a1` is the distance between `z1` and `z2` along the `x1` axis. `J1` rotates about the global `z` axis, which means `z1` is paralel to the global. `Z2` points along the global `y` axis, meaning the `x1` axis points along the global `x` axis, so `a1` corresponds to the `x` displacement between `j1`,`j2` on the urdf file, or .35m.
+- `a1` is the distance between `z1` and `z2` along the `x1` axis. `J1` rotates about the global `z` axis, which means `z1` is parallel to the global. `Z2` points along the global `y` axis, meaning the `x1` axis points along the global `x` axis, so `a1` corresponds to the `x` displacement between `j1`,`j2` on the urdf file, or .35m.
 - `α1` is the angle between `z1` and `z2` about `x1`. The `z2` axis is 90 degrees in the negative direction from the `z1` axis about `x1` according to the right hand rule, so `α1` = -90.
 - `θ1` is the angle between x0 and x1 about z1. `θ1` is 0 since `z0` is coincident with `z1`.
 - `d1` is the signed distance between `x0` and `x1` along `z1`. `x0` is at `z` = 0, and `x1` is at the global `z` location of `j2`, or .33m + .42m = .75m   
@@ -95,7 +99,7 @@ The DH parameter reference frames are defined in relation to the local coordinat
       R0_G = ( ( ( ( ( ( T0_1 * T1_2) * T2_3 ) * T3_4 ) * T4_5 ) * T5_6 ) * T6_7)
 
 
-The result is the full homogeneous transform from base to end effector in the DH frame. There is still one step required if we wih to compare results with the Rviz simulation. The DH gripper frame is defined differently from the gripper frame in Rviz, so we must rotate the R0_G frame such that it coincides with the Rviz axes definition to compare results.
+The result is the full homogeneous transform from base to end effector in the DH frame. There is still one step required if we with to compare results with the Rviz simulation. The DH gripper frame is defined differently from the gripper frame in Rviz, so we must rotate the R0_G frame such that it coincides with the Rviz axes definition to compare results.
 
      T_corr = simplify(R_z.evalf(subs = {r3:np.pi}) * R_y.evalf(subs ={r2:-np.pi/2} ) )
     T_tot = T0_G * T_corr
@@ -108,7 +112,7 @@ Finally, we have a complete homogeneous transformation from base frame to grippe
 # Inverse Kinematics
 ---
 
- The inverse kinematics problem is the opposite: given an end effector location and orientation, what are the joint settings that give that location and orientation? While analytic methods exist, the suggested method is to find a particular solution for the application in question that requires you to solve a series of equations given by the layout of actuators and bounded by their ranges. For the kuka arm, there are 6 rotary joints. Since we have a gripper arm with a spherical wrist joint, we can decouple the translation and rotation steps into two separate problems.
+ The inverse kinematics problem is the opposite: given an end effector location and orientation, what are the joint settings that give that location and orientation? While analytic methods exist, the suggested method is to find a particular solution for the application in question that requires you to solve a series of equations given by the layout of actuators and bounded by their ranges. For the Kuka arm, there are 6 rotary joints. Since we have a gripper arm with a spherical wrist joint, we can decouple the translation and rotation steps into two separate problems.
 
 A decoupled `RRR` - `RRR` robotic arm can be thought of as comprised of two separate components: a `RRR` robotic arm the controls the `x`,`y`,`z` position of the wrist center, and a `RRR` spherical wrist that controls the orientation of the end effector in relation to the wrist center.  
 
@@ -140,7 +144,7 @@ shows that we are given an `x`,`y`,`z` pose in 3D, and orientation in quaternion
     R0_G = R_z(yaw) * R_y(pitch) * R_x(roll)
 
 
-Where `R0_G` is the rotation matrix from the base frame to the gripper frame as defined in the urdf file. Lastly, we need to apply the rotation from the urdf gripper frame to the DH parameter gripper frame. Since we solved for the matrix from the DH gripper frame to the urdf gripper frame in the forward kinemtaics solution above, we can just invert this matrix for the reverse transformation:
+Where `R0_G` is the rotation matrix from the base frame to the gripper frame as defined in the urdf file. Lastly, we need to apply the rotation from the urdf gripper frame to the DH parameter gripper frame. Since we solved for the matrix from the DH gripper frame to the urdf gripper frame in the forward kinematics solution above, we can just invert this matrix for the reverse transformation:
 
 
       R_corr = R_rot * (R_z.evalf(subs={r3:pi}) * R_y.evalf(subs={r2:-pi/2})).inv()
@@ -227,7 +231,7 @@ resulting in the matrix:
 
 
 
-Inspection of the above matrix shows we are immedietely given a numerical value for the `cos(q5)` in `r23`. This is still ambiguous for `q5`, but does provide us with a nemuerical value for the sine as `sin(q5) = sqrt(1 - r23^2)`. we can substitute the sine value into `r21` and `r22` to get a numerical value for `cos(q6)`, `sin(q6)`, leading to a numercal value for `q6` from `q6 = atan2(sin(q6),cos(q6))`. Similarly, we can substitute `sin(q5)` into `r13` and `r31` to solve for `q4` via `atan2`. Everything together results in the equations:
+Inspection of the above matrix shows we are immediately given a numerical value for the `cos(q5)` in `r23`. This is still ambiguous for `q5`, but does provide us with a numerical value for the sine as `sin(q5) = sqrt(1 - r23^2)`. we can substitute the sine value into `r21` and `r22` to get a numerical value for `cos(q6)`, `sin(q6)`, leading to a numerical value for `q6` from `q6 = atan2(sin(q6),cos(q6))`. Similarly, we can substitute `sin(q5)` into `r13` and `r31` to solve for `q4` via `atan2`. Everything together results in the equations:
 
 
     theta6 = float(atan2((-R3_6[4]/sqrt(1-R3_6[5]^2)),(R3_6[3]/sqrt(1-R3_6[5]^ 2))))
@@ -242,7 +246,7 @@ The above inverse kinematics solution gets very good accuracy and repeatability 
 
 ![alt text][image3]
 
-Above: The kuka arm successfully stacking 6 cylinders in simulation
+Above: The Kuka arm successfully stacking 6 cylinders in simulation
 
 The main problem is the speed of execution. IK_server.py is written using Sympy primarily, and as a result takes noticeable time to return the joint angle solutions when called. Sometimes resulting in the warning:
 
@@ -251,6 +255,6 @@ First valid point will be reached in 0.041s.
 
 when computation took too long.
 
-A better node would hard code the required matrices and use numpy to perform computation during runtime. Since this exercise was more focused on finding the mathematical solution to the inverse kinematics problem, I concluded with the sympy solution.
+A better node would hard code the required matrices and use numpy to perform computation during runtime. Since this exercise was more focused on finding the mathematical solution to the inverse kinematics problem, I concluded with the Sympy solution.
 
-Additionally, there are moments in the simulation where the arm adjusts its ee orientation by `pi` about the `z_G` axis before continuing its trajectory. This is likely due to not specifying a correct quadrant for joint angle solutions. A better IK node would be more informed when choosing between equivalent solutions for ee orientation so the final motion would not make unnecessary adjustments. 
+Additionally, there are moments in the simulation where the arm adjusts its ee orientation by `pi` about the `z_G` axis before continuing its trajectory. This is likely due to not specifying a correct quadrant for joint angle solutions. A better IK node would be more informed when choosing between equivalent solutions for ee orientation so the final motion would not make unnecessary adjustments.
