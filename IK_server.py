@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (C) 2017 Electric Movement Inc.
+#
 #
 # This file is part of Robotic Arm: Pick and Place project for Udacity
 # Robotics nano-degree program
@@ -8,6 +8,7 @@
 # All Rights Reserved.
 
 # Author: Harsh Pandya
+# Author: Sean Cassero
 
 # import modules
 import rospy
@@ -20,9 +21,9 @@ from sympy import *
 
 
 def handle_calculate_IK(req):
-    rospy.loginfo("Received %s eef-poses from the plan" % len(req.poses))
+    rospy.loginfo("Received %s eef-poses" % len(req.poses))
     if len(req.poses) < 1:
-        print "No valid poses received"
+        print "No poses received"
         return -1
     else:
         # Initialize service response
