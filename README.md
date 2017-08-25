@@ -3,7 +3,7 @@
 [image3]: ./photos/stack.png
 
 
-# Udacity Pick and Place Project Writeup
+# Pick and Place Challenge Writeup
 ---
 
 
