@@ -255,6 +255,6 @@ First valid point will be reached in 0.041s.
 
 when computation took too long.
 
-A better node would hard code the required matrices and use numpy to perform computation during runtime. Since this exercise was more focused on finding the mathematical solution to the inverse kinematics problem, I concluded with the Sympy solution.
+A better node would retreive the homogeneous transformation matrices from the parameter server for re-usability, and use numpy for matrix calculations to improve execution speed. Since this exercise was more focused on finding the mathematical solution to the inverse kinematics problem, I concluded with the Sympy solution.
 
-Additionally, there are moments in the simulation where the arm adjusts its ee orientation by `pi` about the `z_G` axis before continuing its trajectory. This is likely due to not specifying a correct quadrant for joint angle solutions. A better IK node would be more informed when choosing between equivalent solutions for ee orientation so the final motion would not make unnecessary adjustments.
+Additionally, there are moments in the simulation where the arm adjusts its ee orientation by pi about the z_G axis before continuing its trajectory. This is likely due to not specifying a single quadrant for joint angle solutions. A better IK node would compute all working joint angle configurations and return the one with minimal joint difference from the previous state.
